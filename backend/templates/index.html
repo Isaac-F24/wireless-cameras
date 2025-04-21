@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #container {
+      position: relative;
+      display: inline-block;
+    }
+    #overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: white;
+      background: rgba(0,0,0,0.5);
+      padding: 5px;
+    }
+    #stream {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <h3>Cameras</h3>
+    <ul>
+      {% for cam, is_live in live_cams.items() %}
+        <li>{{ cam }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div id="container">
+    <img id="stream" src="/stream/bedroom" width="640" height="480">
+    <div id="overlay">Bedroom</div>
+  </div>
+  <div id="container">
+    <img id="stream" src="/stream/bedroom2" width="640" height="480">
+    <div id="overlay">Bedroom2</div>
+  </div>
+</body>
+
+</html>
