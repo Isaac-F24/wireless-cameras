@@ -10,24 +10,13 @@ app = Flask(__name__)
 
 _frames: dict[str, bytes] = {}
 _last_update_time: dict[str, float] = {} # time of last update for each camera
-_live_cams: dict[str, bool] = {} # whether the camera is live or not
+_live_cams: set[str] = set()  # set of cameras that are currently live
 _lock = Lock()
 
 
 class PostLogFilter(logging.Filter):
-    def __init__(self):
-        super().__init__()
-        self.logged = 0
-
     def filter(self, record):
-        if ("POST /upload" in record.getMessage()):
-            if self.logged < 2:
-                self.logged += 1
-                return True
-            else:
-                # Ignore all other POST requests to /upload
-                return False
-        return True
+        return ("POST /upload" not in record.getMessage())
 logging.getLogger('werkzeug').addFilter(PostLogFilter())
     
 
@@ -47,7 +36,9 @@ def upload(cam_id: str):
     with _lock:
         _frames[cam_id] = request.data
         _last_update_time[cam_id] = time.time()
-        _live_cams[cam_id] = True
+        if cam_id not in _live_cams:
+            print(f"Camera {cam_id} started streaming")
+        _live_cams.add(cam_id)
     return ('', 204)                      # ESP32 only checks for 200/204
 
 
@@ -102,7 +93,7 @@ def check_camera_status_loop():
 
                     _frames[cam_id] = data
                     del _last_update_time[cam_id]
-                    _live_cams[cam_id] = False
+                    _live_cams.discard(cam_id)
 
         time.sleep(1)  # Check every second
 

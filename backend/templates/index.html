@@ -2,20 +2,27 @@
 <html>
 <head>
   <style>
-    #container {
+    .container {
       position: relative;
       display: inline-block;
+      border-radius: 5px;
+      border-color: black;
     }
-    #overlay {
+    .overlay {
       position: absolute;
-      top: 10px;
+      bottom: 10px;
       left: 10px;
       color: white;
       background: rgba(0,0,0,0.5);
       padding: 5px;
     }
-    #stream {
+    .stream {
       display: block;
+    }
+
+    body {
+      background-color: #e0e0e0;
+      font-family: Geneva, sans-serif;
     }
   </style>
 </head>
@@ -24,20 +31,20 @@
   <div>
     <h3>Cameras</h3>
     <ul>
-      {% for cam, is_live in live_cams.items() %}
+      {% for cam in live_cams %}
         <li>{{ cam }}</li>
       {% endfor %}
     </ul>
   </div>
 
-  <div id="container">
-    <img id="stream" src="/stream/bedroom" width="640" height="480">
-    <div id="overlay">Bedroom</div>
-  </div>
-  <div id="container">
-    <img id="stream" src="/stream/bedroom2" width="640" height="480">
-    <div id="overlay">Bedroom2</div>
-  </div>
+
+  {% for camID in live_cams %}
+    <div class="container">
+      <img class="stream" src="/stream/{{ camID }}" width="640" height="480">
+      <div class="overlay">{{ camID }}</div>
+    </div>
+  {% endfor %}
+    
 </body>
 
 </html>
