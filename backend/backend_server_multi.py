@@ -4,7 +4,7 @@
 import time
 import logging
 from threading import Lock, Thread
-from flask import Flask, request, Response, abort, jsonify, render_template
+from flask import Flask, request, Response, abort, jsonify, render_template, session, redirect, url_for
 
 app = Flask(__name__)
 
@@ -13,6 +13,7 @@ _last_update_time: dict[str, float] = {} # time of last update for each camera
 _live_cams: set[str] = set()  # set of cameras that are currently live
 _lock = Lock()
 
+app.secret_key = "key"
 
 class PostLogFilter(logging.Filter):
     def filter(self, record):
@@ -22,7 +23,36 @@ logging.getLogger('werkzeug').addFilter(PostLogFilter())
 
 @app.route('/')
 def index():
-    return render_template('index.html', live_cams=_live_cams)
+    if "logged_in" in session:
+        return render_template('index.html', live_cams=_live_cams)
+    else:
+        return redirect('/login')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        if "logged_in" in session:
+            return redirect("/")
+        
+        return render_template('login.html')
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        user_data = load_users() # Note, not safe for real-life use, good enough for demo
+
+        if username in user_data and user_data[username] == password:
+            session['logged_in'] = username
+            return redirect("/")
+        else:
+            return render_template('login.html', error="Invalid credentials")
+        
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.pop('logged_in', None)
+    return redirect('/login')
 
 # Camera upload endpoint
 @app.route('/upload/<cam_id>', methods=['POST'])
@@ -74,6 +104,20 @@ def cameras():
     with _lock:
         cams = list(_frames.keys())
     return jsonify(cameras=cams, count=len(cams))
+
+
+def load_users():
+    """
+    Note- not safe for real-life use, use some kind of database/encryption
+    """
+    users = {}
+    with open('static/users.txt', 'r') as f:
+        for line in f:
+            if ':' in line:
+                user, pwd = line.strip().split(':', 1)
+                users[user] = pwd
+    return users
+
 
 
 def check_camera_status_loop():

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Wireless Cameras</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+</head>
+
+<body>
+  <div class="login-wrapper">
+    <form class="login-form" method="POST" action="/login">
+      <h2>Login</h2>
+      {% if error %}
+        <p class="error">{{ error }}</p>
+      {% endif %}
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Log In</button>
+    </form>
+  </div>
+</body>
+</html>

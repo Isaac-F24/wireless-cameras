@@ -1,50 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <style>
-    .container {
-      position: relative;
-      display: inline-block;
-      border-radius: 5px;
-      border-color: black;
-    }
-    .overlay {
-      position: absolute;
-      bottom: 10px;
-      left: 10px;
-      color: white;
-      background: rgba(0,0,0,0.5);
-      padding: 5px;
-    }
-    .stream {
-      display: block;
-    }
-
-    body {
-      background-color: #e0e0e0;
-      font-family: Geneva, sans-serif;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Wireless Cameras</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
 <body>
-  <div>
-    <h3>Cameras</h3>
+  <div class="sidebar">
+    <h2>Available Cameras</h2>
+    {% if live_cams %}
     <ul>
       {% for cam in live_cams %}
-        <li>{{ cam }}</li>
+        <li>
+          <label for="cam-{{ cam }}">{{ cam }}</label>
+          <input type="checkbox" id="cam-{{ cam }}" class="camera-toggle" data-cam="{{ cam }}" checked>
+          <label for ="cam-{{ cam }}" class="toggle-label"></label>
+
+        </li>
       {% endfor %}
     </ul>
+    {% else %}
+      <p class="no-cameras">No cameras connected.</p>
+    {% endif %}
+
+    <p class="reload-msg">Reload for the newest information.</p>
+
+    <form method="POST" action="/logout" class="logout-form">
+      <button type="submit">Log Out</button>
+    </form>
+  </div>
+
+  <div class="content">
+    {% if live_cams %}
+      {% for camID in live_cams %}
+      <div class="camera-container" id="stream-{{ camID }}">
+        <img class="stream" src="/stream/{{ camID }}" alt="Live Stream {{ camID }}">
+        <div class="overlay">{{ camID }}</div>
+      </div>
+    {% endfor %}
+    {% else %}
+      <div class="camera-container empty-state">
+        <p>Connect a camera to power to get started.</p>
+      </div>
+    {% endif %}
   </div>
 
 
-  {% for camID in live_cams %}
-    <div class="container">
-      <img class="stream" src="/stream/{{ camID }}" width="640" height="480">
-      <div class="overlay">{{ camID }}</div>
-    </div>
-  {% endfor %}
-    
-</body>
 
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
 </html>
